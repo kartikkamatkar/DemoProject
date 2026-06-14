@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project Management Form</title>
+</head>
+
+<body>
+
+<h2>Project Management Form</h2>
+
+<form id="projectForm">
+
+    <label>Project ID:</label><br>
+    <input type="text" id="projectId"><br><br>
+
+    <label>Project Name:</label><br>
+    <input type="text" id="projectName"><br><br>
+
+    <label>Assigned To:</label><br>
+    <input type="text" id="assignedTo"><br><br>
+
+    <label>Assignment Date:</label><br>
+    <input type="date" id="assignmentDate"><br><br>
+
+    <label>Deadline:</label><br>
+    <input type="date" id="deadline"><br><br>
+
+    <input type="button" value="Save" onclick="saveData()">
+    <input type="button" value="Reset" onclick="resetForm()">
+
+</form>
+
+<script>
+// Configuration
+const connToken = "Ji4n5#|j5®·fChT5#_S4n5";
+const dbName = "COLLEGE-DB";
+const relName = "PROJECT-TABLE";
+
+function validateForm() {
+    if (document.getElementById("projectId").value === "") {
+        alert("Project ID is required");
+        document.getElementById("projectId").focus();
+        return false;
+    }
+    if (document.getElementById("projectName").value === "") {
+        alert("Project Name is required");
+        document.getElementById("projectName").focus();
+        return false;
+    }
+    if (document.getElementById("assignedTo").value === "") {
+        alert("Assigned To is required");
+        document.getElementById("assignedTo").focus();
+        return false;
+    }
+    return true;
+}
+
+async function saveData() {
+    if (!validateForm()) {
+        return;
+    }
+
+    // Capture input values into an internal object structure
+    const projectData = {
+        "Project-ID": document.getElementById("projectId").value,
+        "Project-Name": document.getElementById("projectName").value,
+        "Assigned-To": document.getElementById("assignedTo").value,
+        "Assignment-Date": document.getElementById("assignmentDate").value,
+        "Deadline": document.getElementById("deadline").value
+    };
+
+    // Format wrapper stringifying the inner jsonStr data payload specifically for JPDB
+    const jpdbPutRequest = {
+        "token": connToken,
+        "cmd": "PUT",
+        "dbName": dbName,
+        "rel": relName,
+        "jsonStr": JSON.stringify(projectData)
+    };
+
+    try {
+        // Execute network POST request targeting the port 5577 IML engine endpoint
+        const response = await fetch("http://api.login2explore.com:5577/api/iml", {
+            method: "POST",
+            body: JSON.stringify(jpdbPutRequest)
+        });
+
+        const result = await response.json();
+        console.log("JPDB Server Response:", result);
+
+        // Check for common JPDB success states (status 200 or custom success messages)
+        if (result.status === 200 || result.message === "DATA INSERTED SUCCESSFULLY") {
+            alert("Project Saved Successfully inside COLLEGE-DB!");
+            resetForm();
+        } else {
+            alert("Database Error: " + result.message);
+        }
+
+    } catch (error) {
+        console.error("Network Error Details:", error);
+        alert("Could not connect to database. Please check your console log.");
+    }
+}
+
+function resetForm() {
+    document.getElementById("projectForm").reset();
+    document.getElementById("projectId").focus();
+}
+</script>
+
+</body>
+</html>
